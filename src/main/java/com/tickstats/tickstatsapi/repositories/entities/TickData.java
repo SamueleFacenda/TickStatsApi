@@ -12,9 +12,9 @@ import java.sql.Timestamp;
 public class TickData {
 
     @Id
-    @SequenceGenerator(name="tokens_id_seq", sequenceName="tokens_id_seq", allocationSize=1)
+    @SequenceGenerator(name="data_id_seq", sequenceName="data_id_seq", allocationSize=1)
     @GeneratedValue(strategy = GenerationType.SEQUENCE,
-            generator="tokens_id_seq")
+            generator="data_id_seq")
     @Getter
     private Long id;
     @Getter @Setter

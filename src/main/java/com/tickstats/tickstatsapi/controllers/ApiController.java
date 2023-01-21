@@ -7,22 +7,24 @@ import com.tickstats.tickstatsapi.repositories.entities.Comment;
 import com.tickstats.tickstatsapi.repositories.entities.MyUser;
 import com.tickstats.tickstatsapi.repositories.entities.ReductedTickData;
 import com.tickstats.tickstatsapi.repositories.entities.TickData;
-import com.tickstats.tickstatsapi.requestresponse.MultipleTickDataPostRequest;
-import com.tickstats.tickstatsapi.requestresponse.TickDataPostRequest;
-import com.tickstats.tickstatsapi.requestresponse.UsernamePasswordRequest;
-import com.tickstats.tickstatsapi.requestresponse.TickDataResponse;
+import com.tickstats.tickstatsapi.requestresponse.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.sql.Timestamp;
 import java.util.List;
 
+import static com.tickstats.tickstatsapi.controllers.ApiController.ORIGIN;
+
 @RestController
+@CrossOrigin(origins = ORIGIN, allowCredentials = "true")
 public class ApiController {
 
 
@@ -32,10 +34,11 @@ public class ApiController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     public static final String ORIGIN = "http://localhost:3000";
 
 
-    @CrossOrigin(origins = ORIGIN, allowCredentials = "true")
     @GetMapping("/api/data")
     public ResponseEntity<?> data() throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -52,7 +55,24 @@ public class ApiController {
         return ResponseEntity.ok(new TickDataResponse(redData));
     }
 
-    //accessibile anche senza autenticazione, non serve neanche @CrossOrigin
+    @GetMapping("/api/datacount")
+    public ResponseEntity<?> datacount() throws Exception {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
+
+        MyUser currentUser = userRepository.findByUsername(currentPrincipalName);
+
+        return ResponseEntity.ok(
+            new LabelFrequencyResponse(
+                userRepository
+                    .findCountLabelForUser(currentUser.getUsername())
+                    .stream()
+                    .map(dataInterface -> new LabelFrequencyResponse.LabelFrequency(dataInterface.getLabel(), dataInterface.getFrequency()))
+                    .toList()
+        ));
+    }
+
+    //accessibile anche senza autenticazione
     @PostMapping("/api/register")
     public void register(@RequestBody UsernamePasswordRequest request, HttpServletResponse response) throws Exception {
         if(userRepository.existsByUsername(request.getUsername())){
@@ -61,13 +81,18 @@ public class ApiController {
 
         MyUser user = new MyUser();
         user.setUsername(request.getUsername());
-        user.setPassword(request.getPassword());
-        userRepository.save(user);
 
+        String password = passwordEncoder.encode(request.getPassword());
+        user.setPassword(password);
+        try {
+            userRepository.save(user);
+        }catch(Exception e){
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+        }
         response.setStatus(HttpStatus.CREATED.value());
     }
 
-    @CrossOrigin(origins = ORIGIN, allowCredentials = "true")
+
     @PostMapping("/api/postdata")
     public ResponseEntity<?> postdata(@RequestBody TickDataPostRequest data) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -80,7 +105,6 @@ public class ApiController {
         return ResponseEntity.ok("ok");
     }
 
-    @CrossOrigin(origins = ORIGIN, allowCredentials = "true")
     @PostMapping("/api/postdatamultiple")
     public ResponseEntity<?> postdatamultiple(@RequestBody MultipleTickDataPostRequest data) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -110,7 +134,6 @@ public class ApiController {
     }
 
     @GetMapping("/api/testauth")
-    @CrossOrigin(origins = ORIGIN, allowCredentials = "true")
     public String testauth() throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

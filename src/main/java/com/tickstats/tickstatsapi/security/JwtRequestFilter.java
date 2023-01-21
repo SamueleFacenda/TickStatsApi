@@ -45,7 +45,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String username = null;
         String jwtToken = null;
 
-        //accetto il token sia come coockie che come authentication header(per l'app mobile)
+        //accetto il token sia come cookie che come authentication header(per l'app mobile)
         if(requestTokenCookie != null)
             jwtToken = requestTokenCookie;
         else if(requestTokenHeader != null && requestTokenHeader.startsWith("Bearer "))

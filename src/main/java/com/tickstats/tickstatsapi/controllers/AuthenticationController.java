@@ -19,6 +19,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 import static com.tickstats.tickstatsapi.controllers.ApiController.ORIGIN;
+import static com.tickstats.tickstatsapi.security.WebSecurityConfig.HTTPS_ENABLED;
 import static com.tickstats.tickstatsapi.utils.JwtUtils.JWT_TOKEN_VALIDITY;
 
 
@@ -55,7 +56,9 @@ public class AuthenticationController {
         cookie.setMaxAge((int) JWT_TOKEN_VALIDITY);
 
         // optional properties
-        //cookie.setSecure(true);
+        if(HTTPS_ENABLED) {
+            cookie.setSecure(true);
+        }
         cookie.setHttpOnly(true);
         cookie.setPath("/");
 

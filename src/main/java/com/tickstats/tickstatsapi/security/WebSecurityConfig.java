@@ -2,6 +2,7 @@ package com.tickstats.tickstatsapi.security;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,6 +25,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig {
+
+    @Value("${server.ssl.enabled:false}")
+    public static boolean HTTPS_ENABLED;
 
     @Autowired
     private AuthenticationEntryPoint jwtAuthenticationEntryPoint;
@@ -53,8 +57,12 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
+        if(HTTPS_ENABLED)
+            httpSecurity.requiresChannel().anyRequest().requiresSecure();
+
         // Non ho bisogno di csrf, non posso fare azioni sull'user da questa api, solo leggere dati(abilito anche cors)
-        httpSecurity.cors().and().csrf().disable()
+        httpSecurity
+                .cors().and().csrf().disable()
                 .authorizeRequests().antMatchers("/authenticate").permitAll()
                 .antMatchers("/api/register").permitAll()
                 .anyRequest().authenticated().and()
