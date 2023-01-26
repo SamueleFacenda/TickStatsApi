@@ -9,6 +9,7 @@ import com.tickstats.tickstatsapi.repositories.entities.ReductedTickData;
 import com.tickstats.tickstatsapi.repositories.entities.TickData;
 import com.tickstats.tickstatsapi.requestresponse.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -86,10 +87,12 @@ public class ApiController {
         user.setPassword(password);
         try {
             userRepository.save(user);
-        }catch(Exception e){
+            response.setStatus(HttpStatus.CREATED.value());
+        }catch(DataIntegrityViolationException e){
+            // user already exists
             response.setStatus(HttpStatus.BAD_REQUEST.value());
         }
-        response.setStatus(HttpStatus.CREATED.value());
+
     }
 
 
