@@ -9,6 +9,7 @@ import com.tickstats.tickstatsapi.repositories.entities.ReductedTickData;
 import com.tickstats.tickstatsapi.repositories.entities.TickData;
 import com.tickstats.tickstatsapi.requestresponse.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +23,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.sql.Timestamp;
 import java.util.List;
 
-import static com.tickstats.tickstatsapi.controllers.ApiController.ORIGIN;
-
 @RestController
-@CrossOrigin(origins = ORIGIN, allowCredentials = "true")
+@CrossOrigin(origins = {"${access.control.allow.origin}"}, allowCredentials = "true")
 public class ApiController {
 
 
@@ -37,7 +36,7 @@ public class ApiController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-    public static final String ORIGIN = "http://localhost:3000";
+
 
 
     @GetMapping("/api/data")

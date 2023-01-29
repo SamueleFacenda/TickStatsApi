@@ -18,13 +18,12 @@ import com.tickstats.tickstatsapi.utils.JwtUtils;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
-import static com.tickstats.tickstatsapi.controllers.ApiController.ORIGIN;
 import static com.tickstats.tickstatsapi.security.WebSecurityConfig.HTTPS_ENABLED;
 import static com.tickstats.tickstatsapi.utils.JwtUtils.JWT_TOKEN_VALIDITY;
 
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = {"${access.control.allow.origin}"}, allowCredentials = "true")
 public class AuthenticationController {
 
     @Autowired
@@ -36,7 +35,6 @@ public class AuthenticationController {
     @Autowired
     private JwtUserDetailsService userDetailsService;
 
-    @CrossOrigin(origins = ORIGIN, allowCredentials = "true")
     @PostMapping( "/authenticate")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody UsernamePasswordRequest authenticationRequest, HttpServletResponse response) throws Exception {
 
